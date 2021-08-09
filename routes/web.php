@@ -11,11 +11,19 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::middleware(['basic.custom'])->group(function () {
+    Route::get('vouchers', 'VoucherController@index');
+    Route::get('vouchers/active', 'VoucherController@actives');
+    Route::get('vouchers/id/{id}', 'VoucherController@byId');
+    Route::get('vouchers/code/{code}', 'VoucherController@byCode');
+    Route::delete('vouchers/{id}', 'VoucherController@delete');
 
-Route::get('vouchers', 'VoucherController@index');
-Route::get('vouchers/active', 'VoucherController@actives');
-Route::get('vouchers/id/{id}', 'VoucherController@byId');
-Route::get('vouchers/code/{code}', 'VoucherController@byCode');
+    Route::get('guests', 'GuestController@index');
+    Route::get('guests/active', 'GuestController@actives');
+    Route::get('guests/expireds', 'GuestController@expireds');
+    Route::get('guests/id/{id}', 'GuestController@byId');
+    Route::get('guests/voucher/id/{id}', 'GuestController@byVoucherId');
+    Route::get('guests/voucher/code/{code}', 'GuestController@byVoucherCode');
+    #Route::delete('guests/{id}', 'GuestController@delete');
+
+});
