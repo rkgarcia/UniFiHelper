@@ -47,18 +47,19 @@ class VoucherController extends Controller
         $date = new \DateTime();
         $timestamp = $date->getTimestamp();
         $validVoucher = Voucher::whereRaw(['end_time' => ['$gt' => $timestamp], '_id' => $id])->count();
+        $voucherWithoutUse = Voucher::where('end_time', 'exists', false)->where('_id', $id)->count();
         $guestsWithVoucher = Guest::whereRaw(['end' => ['$gt' => $timestamp], 'voucher_id' => $id])->count();
 
-        $total = $validVoucher + $guestsWithVoucher;
+        $total = $validVoucher + $guestsWithVoucher + $voucherWithoutUse;
         if($total < 1) {
-            return response()->json(['message' => "Voucher no encontrado"], 404);
+            return response()->json(['message' => "Voucher no encontrado", 'counter' => $total], 404);
         }
         if($guestsWithVoucher > 0) {
             Guest::whereRaw(['end' => ['$gt' => $timestamp], 'voucher_id' => $id])->update(['end' => $timestamp]);
         }
         $voucher = Voucher::find($id);
         if(!is_null($voucher)) {
-            $voucher->end = $timestamp;
+            $voucher->end_time = $timestamp;
             $voucher->valid = false;
             $voucher->save();
         }
