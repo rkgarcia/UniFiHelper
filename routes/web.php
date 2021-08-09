@@ -18,12 +18,17 @@ Route::middleware(['basic.custom'])->group(function () {
     Route::get('vouchers/code/{code}', 'VoucherController@byCode');
     Route::delete('vouchers/{id}', 'VoucherController@delete');
 
+    Route::post('vouchers/{site}/create', 'VoucherController@create');
+
     Route::get('guests', 'GuestController@index');
     Route::get('guests/active', 'GuestController@actives');
     Route::get('guests/expireds', 'GuestController@expireds');
     Route::get('guests/id/{id}', 'GuestController@byId');
     Route::get('guests/voucher/id/{id}', 'GuestController@byVoucherId');
     Route::get('guests/voucher/code/{code}', 'GuestController@byVoucherCode');
-    #Route::delete('guests/{id}', 'GuestController@delete');
+
+    Route::get('verify/login', function() {
+        return response()->json([]);
+    });
 
 });
