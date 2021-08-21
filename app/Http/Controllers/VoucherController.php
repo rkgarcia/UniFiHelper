@@ -21,13 +21,28 @@ class VoucherController extends Controller
 
     public function actives()
     {
-        return response()->json(Voucher::where('valid', 'exists', false)->get());
+        $date = new \DateTime();
+        $timestamp = $date->getTimestamp();
+        $vouchers = Voucher::whereRaw([
+            'end_time'  =>   [
+                '$gt' => $timestamp
+            ],
+            'valid' => [
+                '$exists' => false
+            ]
+        ])->get();
+        return response()->json($vouchers);
     }
 
     public function byId(string $id)
     {
         $voucher = Voucher::find($id);
         if(is_null($voucher)) {
+            return response()->json(['message' => "Voucher no encontrado"], 404);
+        }
+        $date = new \DateTime();
+        $timestamp = $date->getTimestamp();
+        if((int)$voucher->end_time < (int)$timestamp || $voucher->valid == false) {
             return response()->json(['message' => "Voucher no encontrado"], 404);
         }
         return response()->json($voucher);
