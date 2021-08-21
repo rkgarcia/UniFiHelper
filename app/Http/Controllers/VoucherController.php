@@ -32,9 +32,6 @@ class VoucherController extends Controller
         $vouchers = Voucher::whereRaw([
             'end_time'  =>   [
                 '$gt' => $this->timestamp
-            ],
-            'valid' => [
-                '$exists' => false
             ]
         ])->get();
         return response()->json($vouchers);
