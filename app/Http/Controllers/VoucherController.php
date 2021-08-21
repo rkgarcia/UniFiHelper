@@ -13,6 +13,14 @@ use App\Voucher;
 class VoucherController extends Controller
 {
     protected $client = null;
+    protected $date = null;
+    protected $timestamp = null;
+
+    public function __construct()
+    {
+        $this->date = new \DateTime();
+        $this->timestamp = (int)$this->date->getTimestamp();
+    }
 
     public function index()
     {
@@ -21,11 +29,9 @@ class VoucherController extends Controller
 
     public function actives()
     {
-        $date = new \DateTime();
-        $timestamp = $date->getTimestamp();
         $vouchers = Voucher::whereRaw([
             'end_time'  =>   [
-                '$gt' => $timestamp
+                '$gt' => $this->timestamp
             ],
             'valid' => [
                 '$exists' => false
@@ -40,9 +46,7 @@ class VoucherController extends Controller
         if(is_null($voucher)) {
             return response()->json(['message' => "Voucher no encontrado"], 404);
         }
-        $date = new \DateTime();
-        $timestamp = $date->getTimestamp();
-        if((int)$voucher->end_time < (int)$timestamp || $voucher->valid == false) {
+        if((int)$voucher->end_time < $this->timestamp || $voucher->valid == false) {
             return response()->json(['message' => "Voucher no encontrado"], 404);
         }
         return response()->json($voucher);
@@ -59,22 +63,20 @@ class VoucherController extends Controller
 
     public function delete(string $id)
     {
-        $date = new \DateTime();
-        $timestamp = $date->getTimestamp();
-        $validVoucher = Voucher::whereRaw(['end_time' => ['$gt' => $timestamp], '_id' => $id])->count();
+        $validVoucher = Voucher::whereRaw(['end_time' => ['$gt' => $this->timestamp], '_id' => $id])->count();
         $voucherWithoutUse = Voucher::where('end_time', 'exists', false)->where('_id', $id)->count();
-        $guestsWithVoucher = Guest::whereRaw(['end' => ['$gt' => $timestamp], 'voucher_id' => $id])->count();
+        $guestsWithVoucher = Guest::whereRaw(['end' => ['$gt' => $this->timestamp], 'voucher_id' => $id])->count();
 
         $total = $validVoucher + $guestsWithVoucher + $voucherWithoutUse;
         if($total < 1) {
             return response()->json(['message' => "Voucher no encontrado", 'counter' => $total], 404);
         }
         if($guestsWithVoucher > 0) {
-            Guest::whereRaw(['end' => ['$gt' => $timestamp], 'voucher_id' => $id])->update(['end' => $timestamp]);
+            Guest::whereRaw(['end' => ['$gt' => $this->timestamp], 'voucher_id' => $id])->update(['end' => $this->timestamp]);
         }
         $voucher = Voucher::find($id);
         if(!is_null($voucher)) {
-            $voucher->end_time = $timestamp;
+            $voucher->end_time = $this->timestamp;
             $voucher->valid = false;
             $voucher->save();
         }
