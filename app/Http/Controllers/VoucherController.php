@@ -46,7 +46,7 @@ class VoucherController extends Controller
         if(is_null($voucher)) {
             return response()->json(['message' => "Voucher no encontrado"], 404);
         }
-        if((int)$voucher->end_time < $this->timestamp || $voucher->valid == false) {
+        if((int)$voucher->end_time < $this->timestamp) {
             return response()->json(['message' => "Voucher no encontrado"], 404);
         }
         return response()->json($voucher);
@@ -56,6 +56,9 @@ class VoucherController extends Controller
     {
         $voucher = Voucher::where("code", $code)->first();
         if(is_null($voucher)) {
+            return response()->json(['message' => "Voucher no encontrado"], 404);
+        }
+        if((int)$voucher->end_time < $this->timestamp) {
             return response()->json(['message' => "Voucher no encontrado"], 404);
         }
         return response()->json($voucher);
